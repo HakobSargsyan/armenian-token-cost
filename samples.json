@@ -1,0 +1,25 @@
+{
+  "paragraph": {
+    "_note": "Same meaning, same approximate length (~470-485 characters) in every language.",
+    "en": "Software engineering is not only about writing code. It is about understanding the problem, choosing the right architecture, integrating systems that were never designed to work together, and debugging production issues at two in the morning. Tools change every few years, but the way an engineer thinks about failure, responsibility and trade-offs changes much more slowly. That is why experience still matters, even when the technology underneath it is completely new.",
+    "hy": "Ծրագրային ինժեներիան միայն կոդ գրելու մասին չէ։ Այն խնդիրը հասկանալու, ճիշտ ճարտարապետություն ընտրելու, միմյանց հետ աշխատելու համար երբևէ չնախագծված համակարգեր ինտեգրելու և գիշերվա ժամը երկուսին production-ի խնդիրներ վերլուծելու մասին է։ Գործիքները փոխվում են մի քանի տարին մեկ, բայց այն, թե ինչպես է ինժեները մտածում ձախողման, պատասխանատվության և փոխզիջումների մասին, փոխվում է շատ ավելի դանդաղ։ Ահա թե ինչու փորձը դեռ կարևոր է, նույնիսկ երբ դրա տակ ընկած տեխնոլոգիան բոլորովին նոր է։",
+    "ru": "Разработка программного обеспечения — это не только написание кода. Это понимание задачи, выбор правильной архитектуры, интеграция систем, которые никогда не предназначались для совместной работы, и разбор производственных проблем в два часа ночи. Инструменты меняются каждые несколько лет, но то, как инженер думает об отказах, ответственности и компромиссах, меняется гораздо медленнее. Именно поэтому опыт всё ещё важен, даже когда технология под ним совершенно новая."
+  },
+  "sentence": {
+    "_note": "One parallel sentence, used to compare Armenian script against Latin transliteration.",
+    "en": "Artificial intelligence is changing the way engineers build software products.",
+    "hy": "Արհեստական բանականությունը փոխում է այն ձևը, որով ինժեներները կառուցում են ծրագրային արտադրանք։",
+    "hy_latin": "Arhestakan banakanutyun@ pokhum e ayn dzev@, orov inzhenerner@ karucum en cragrayin artadrank.",
+    "ru": "Искусственный интеллект меняет то, как инженеры создают программные продукты.",
+    "es": "La inteligencia artificial está cambiando la forma en que los ingenieros crean productos de software.",
+    "tr": "Yapay zeka, mühendislerin yazılım ürünleri geliştirme biçimini değiştiriyor.",
+    "ka": "ხელოვნური ინტელექტი ცვლის იმას, თუ როგორ აშენებენ ინჟინრები პროგრამულ პროდუქტებს."
+  },
+  "greeting": {
+    "_note": "Everyday short phrase. Short inputs are where per-language overhead hurts most.",
+    "en": "Hello, how are you?",
+    "hy": "Բարև, ինչպե՞ս ես։",
+    "hy_latin": "Barev, inchpes es?",
+    "ru": "Привет, как дела?"
+  }
+}
