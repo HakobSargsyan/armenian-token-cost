@@ -21,5 +21,28 @@
     "hy": "Բարև, ինչպե՞ս ես։",
     "hy_latin": "Barev, inchpes es?",
     "ru": "Привет, как дела?"
+  },
+  "pairs": {
+    "_note": "Realistic mixed-content payloads. Each pair is a faithful translation, NOT length-matched, so ratios are indicative rather than precise. Real-world data is rarely pure prose: structured fields, keys and IDs are ASCII and tokenize identically in both languages, so the Armenian penalty applies only to the natural-language fraction.",
+    "support_ticket": {
+      "_desc": "Support ticket: English keys and metadata, natural-language fields in each language.",
+      "hy": "{\"ticket_id\": \"SUP-48213\", \"status\": \"open\", \"priority\": \"high\", \"customer_name\": \"Արամ Պետրոսյան\", \"subject\": \"Վճարումը չի անցնում\", \"description\": \"Փորձում եմ վճարել քարտով, բայց համակարգը սխալ է տալիս։ Փորձել եմ երեք անգամ, տարբեր քարտերով։ Գումարը չի պահվում, բայց պատվերը չի հաստատվում։\", \"created_at\": \"2026-10-24T09:14:00Z\", \"assigned_to\": \"support_team_2\"}",
+      "en": "{\"ticket_id\": \"SUP-48213\", \"status\": \"open\", \"priority\": \"high\", \"customer_name\": \"Aram Petrosyan\", \"subject\": \"Payment is not going through\", \"description\": \"I am trying to pay by card but the system gives an error. I tried three times with different cards. The money is not held but the order is not confirmed either.\", \"created_at\": \"2026-10-24T09:14:00Z\", \"assigned_to\": \"support_team_2\"}"
+    },
+    "log_line": {
+      "_desc": "Structured log line: ASCII prefix dominates, only the message is translated.",
+      "hy": "2026-10-24 09:14:02 ERROR [payment-service] user_id=48213 msg=\"Վճարումը մերժվել է. անբավարար միջոցներ\" retry_count=3",
+      "en": "2026-10-24 09:14:02 ERROR [payment-service] user_id=48213 msg=\"Payment declined: insufficient funds\" retry_count=3"
+    },
+    "code_switched_prose": {
+      "_desc": "How Armenian engineers actually write: Armenian grammar, English technical terms. Compare against fully_armenian below.",
+      "hy": "Agent-ը ձախողվեց երրորդ քայլին։ Error handling-ը չաշխատեց, որովհետև retry logic-ը սխալ էր կազմաձևված։ Ստուգեցի logs-ը և գտա, որ timeout-ը շատ կարճ էր։ Փոխեցի config-ը և redeploy արեցի։",
+      "en": "The agent failed at the third step. Error handling did not work because the retry logic was misconfigured. I checked the logs and found that the timeout was too short. I changed the config and redeployed."
+    },
+    "fully_armenian_prose": {
+      "_desc": "The same content with technical terms translated into Armenian. Isolates the cost of avoiding English loanwords.",
+      "hy": "Գործակալը ձախողվեց երրորդ քայլին։ Սխալների կառավարումը չաշխատեց, որովհետև կրկնման տրամաբանությունը սխալ էր կազմաձևված։ Ստուգեցի գրանցամատյանը և գտա, որ սպասման ժամանակը շատ կարճ էր։",
+      "en": "The agent failed at the third step. Error handling did not work because the retry logic was misconfigured. I checked the logs and found that the timeout was too short. I changed the config and redeployed."
+    }
   }
 }

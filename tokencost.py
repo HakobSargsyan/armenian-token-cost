@@ -68,6 +68,29 @@ def report(title, texts, enc, price_per_m, note=None):
     print()
 
 
+def report_pairs(texts, enc, price_per_m, note=None):
+    """Report Armenian/English pairs of the same payload side by side."""
+    print("### Mixed content")
+    if note:
+        print(f"_{note}_\n")
+    print("| Payload | Armenian tokens | English tokens | Multiplier | HY chars |")
+    print("| --- | --- | --- | --- | --- |")
+
+    for name, pair in texts.items():
+        if name.startswith("_"):
+            continue
+        hy = len(enc.encode(pair["hy"]))
+        en = len(enc.encode(pair["en"]))
+        label = name.replace("_", " ")
+        print(f"| {label} | {hy} | {en} | {hy / en:.2f}x | {len(pair['hy'])} |")
+    print()
+
+    for name, pair in texts.items():
+        if name.startswith("_") or "_desc" not in pair:
+            continue
+        print(f"- **{name.replace('_', ' ')}** — {pair['_desc']}")
+    print()
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--set", dest="sample_set", help="measure only this sample set")
@@ -94,7 +117,10 @@ def main():
         enc = tiktoken.get_encoding(name)
         print(f"\n## {label}  (`{name}`)\n")
         for set_name, texts in samples.items():
-            report(set_name.capitalize(), texts, enc, args.price, texts.get("_note"))
+            if set_name == "pairs":
+                report_pairs(texts, enc, args.price, texts.get("_note"))
+            else:
+                report(set_name.capitalize(), texts, enc, args.price, texts.get("_note"))
 
 
 if __name__ == "__main__":

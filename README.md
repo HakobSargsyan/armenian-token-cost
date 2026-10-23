@@ -46,6 +46,34 @@ transliteration still wins.
 The practical takeaway: transliterating Armenian to save tokens is no longer a reliable
 optimization on modern models. Measure your own text instead of assuming.
 
+## Mixed content: what real data looks like
+
+The headline number comes from pure prose, but real payloads are rarely pure prose. Logs,
+tickets and API requests are mostly ASCII — keys, IDs, timestamps, enum values, punctuation —
+and that scaffolding tokenizes identically in both languages. The Armenian penalty applies
+only to the natural-language fraction.
+
+Measured on `o200k_base`:
+
+| Payload | Armenian | English | Multiplier |
+| --- | --- | --- | --- |
+| Support ticket (English keys, Armenian values) | 123 | 111 | **1.11x** |
+| Log line (Armenian message) | 44 | 34 | **1.29x** |
+| Armenian prose with English tech terms | 60 | 42 | **1.43x** |
+| Fully Armenian prose | 62 | 42 | **1.48x** |
+
+So for cost modeling, do not multiply the whole payload. Apply the multiplier to the
+natural-language fraction: ticket and log pipelines land near 1.1–1.3x, while document
+pipelines, which are nearly all prose, approach the full rate.
+
+One finding worth noting separately: on `cl100k_base`, Armenian prose written with English
+technical terms cost 230 tokens against 338 for the fully-Armenian version — code-switching
+saved a third. On `o200k_base` that gap is gone (60 against 62). Mixing in English used to be
+a real optimization and no longer is.
+
+These pairs are faithful translations rather than length-matched strings, so treat the ratios
+as indicative. The length-matched comparison is the paragraph set above.
+
 ## Why it matters beyond the bill
 
 - **Cost** — scales linearly with every call, on input and output both.
@@ -58,20 +86,26 @@ optimization on modern models. Measure your own text instead of assuming.
 ## Reproduce it
 
 ```bash
-pip install -r requirements.txt
-python tokencost.py
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+./venv/bin/python tokencost.py
 ```
+
+A virtual environment is required on Debian, Ubuntu and other distributions that mark the
+system Python as externally managed (PEP 668). Elsewhere, `pip install -r requirements.txt`
+and `python tokencost.py` work directly.
 
 Options:
 
 ```bash
-python tokencost.py --set paragraph      # one sample set
-python tokencost.py --price 3.00         # your price per 1M input tokens
-python tokencost.py --text "your text"   # measure your own
+./venv/bin/python tokencost.py --set pairs       # one sample set
+./venv/bin/python tokencost.py --price 3.00      # your price per 1M input tokens
+./venv/bin/python tokencost.py --text "your text"  # measure your own
 ```
 
-Full output is in [RESULTS.md](RESULTS.md). The parallel texts are in
-[samples.json](samples.json) — add a language by adding a translation of the same content.
+Full output is in [RESULTS.md](RESULTS.md). The texts are in [samples.json](samples.json):
+`paragraph`, `sentence` and `greeting` hold the same content in many languages, and `pairs`
+holds realistic Armenian/English payloads. Add a language by adding a translation.
 
 ## Scope and honesty about it
 

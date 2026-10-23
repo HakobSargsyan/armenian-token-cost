@@ -33,6 +33,21 @@ _Everyday short phrase. Short inputs are where per-language overhead hurts most.
 | Armenian (Latin) | 18 | 8 | 0.44 | 1.33x | $0.024 |
 | Russian | 17 | 8 | 0.47 | 1.33x | $0.024 |
 
+### Mixed content
+_Realistic mixed-content payloads. Each pair is a faithful translation, NOT length-matched, so ratios are indicative rather than precise. Real-world data is rarely pure prose: structured fields, keys and IDs are ASCII and tokenize identically in both languages, so the Armenian penalty applies only to the natural-language fraction._
+
+| Payload | Armenian tokens | English tokens | Multiplier | HY chars |
+| --- | --- | --- | --- | --- |
+| support ticket | 388 | 111 | 3.50x | 364 |
+| log line | 100 | 34 | 2.94x | 116 |
+| code switched prose | 230 | 43 | 5.35x | 184 |
+| fully armenian prose | 338 | 43 | 7.86x | 181 |
+
+- **support ticket** — Support ticket: English keys and metadata, natural-language fields in each language.
+- **log line** — Structured log line: ASCII prefix dominates, only the message is translated.
+- **code switched prose** — How Armenian engineers actually write: Armenian grammar, English technical terms. Compare against fully_armenian below.
+- **fully armenian prose** — The same content with technical terms translated into Armenian. Isolates the cost of avoiding English loanwords.
+
 
 ## GPT-4o and newer  (`o200k_base`)
 
@@ -67,4 +82,19 @@ _Everyday short phrase. Short inputs are where per-language overhead hurts most.
 | Armenian | 17 | 11 | 0.65 | 1.83x | $0.033 |
 | Armenian (Latin) | 18 | 7 | 0.39 | 1.17x | $0.021 |
 | Russian | 17 | 6 | 0.35 | 1.00x | $0.018 |
+
+### Mixed content
+_Realistic mixed-content payloads. Each pair is a faithful translation, NOT length-matched, so ratios are indicative rather than precise. Real-world data is rarely pure prose: structured fields, keys and IDs are ASCII and tokenize identically in both languages, so the Armenian penalty applies only to the natural-language fraction._
+
+| Payload | Armenian tokens | English tokens | Multiplier | HY chars |
+| --- | --- | --- | --- | --- |
+| support ticket | 123 | 111 | 1.11x | 364 |
+| log line | 44 | 34 | 1.29x | 116 |
+| code switched prose | 60 | 42 | 1.43x | 184 |
+| fully armenian prose | 62 | 42 | 1.48x | 181 |
+
+- **support ticket** — Support ticket: English keys and metadata, natural-language fields in each language.
+- **log line** — Structured log line: ASCII prefix dominates, only the message is translated.
+- **code switched prose** — How Armenian engineers actually write: Armenian grammar, English technical terms. Compare against fully_armenian below.
+- **fully armenian prose** — The same content with technical terms translated into Armenian. Isolates the cost of avoiding English loanwords.
 
