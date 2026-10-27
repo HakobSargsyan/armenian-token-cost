@@ -47,8 +47,8 @@ _Everyday short phrase. Short inputs are where per-language overhead hurts most.
 | --- | --- | --- | --- | --- | --- |
 | GPT-4 / GPT-3.5 | 100,277 | 0 | 0 | none | 873 tokens |
 | Llama 3.1 | 128,256 | 1 | 0 | `ա` | 786 tokens |
-| Mistral v0.3 | 32,768 | 28 | 0 | `ս` | 534 tokens |
-| Qwen 2.5 | 151,665 | 72 | 0 | `ց` | 476 tokens |
+| Mistral v0.3 | 32,768 | 28 | 0 | `գ` | 534 tokens |
+| Qwen 2.5 | 151,665 | 72 | 0 | `ք` | 476 tokens |
 | Gemma 2 | 256,000 | 231 | 118 | `ագրություններ` | 273 tokens |
 | DeepSeek-V3 | 128,815 | 189 | 118 | `ությունը` | 273 tokens |
 | GPT-4o and newer | 200,019 | 1,726 | 1,578 | `հնարավորություն` | 147 tokens |

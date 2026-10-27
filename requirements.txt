@@ -1,2 +1,8 @@
 tiktoken>=0.7.0
 tokenizers>=0.20.0
+
+# Optional. Only needed to include Claude in familycompare.py, which counts it
+# through the API because Anthropic publishes no tokenizer file. The
+# count_tokens endpoint is not billed for tokens, so this costs nothing beyond
+# having a key set.
+# anthropic>=0.40.0

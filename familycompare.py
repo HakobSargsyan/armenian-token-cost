@@ -18,6 +18,7 @@ Usage:
 
 import argparse
 import json
+import os
 import pathlib
 import sys
 
@@ -52,6 +53,39 @@ FAMILIES = [
     ("DeepSeek-V3", "hf", "deepseek-ai/DeepSeek-V3",
      "DeepSeek's current tokenizer"),
 ]
+
+# Anthropic publishes no tokenizer file for Claude 3 and later, so Claude is
+# counted through the API instead. count_tokens is not billed for tokens, only
+# rate limited, so this costs nothing beyond a key. Skipped when no key is set.
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-opus-5-5")
+
+
+def load_claude(model=CLAUDE_MODEL):
+    """Return count(text) -> int backed by the count_tokens endpoint.
+
+    The endpoint counts a whole request, so every call carries a fixed message
+    wrapper on top of the text itself. We measure that overhead once and
+    subtract it, which makes the numbers comparable with the local tokenizers
+    rather than inflated by a constant.
+    """
+    import anthropic                                  # optional dependency
+
+    client = anthropic.Anthropic()
+
+    def raw(text):
+        return client.messages.count_tokens(
+            model=model, messages=[{"role": "user", "content": text}]
+        ).input_tokens
+
+    # "." is one token in every tokenizer we have checked, so the wrapper is
+    # whatever the endpoint reports beyond that single token.
+    overhead = raw(".") - 1
+
+    def count(text):
+        return raw(text) - overhead
+
+    return count, None, []
+
 
 # Families whose tokenizer is not published. Counting their tokens needs a
 # billed API round-trip, so they are named here instead of guessed at.
@@ -147,12 +181,21 @@ def coverage(strings):
     return len(armenian), len(chunks), longest.strip()
 
 
-def load_all():
+def load_all(with_claude=True):
     """Load every family, skipping any that cannot be fetched."""
+    families = list(FAMILIES)
+    if with_claude and (os.environ.get("ANTHROPIC_API_KEY")
+                        or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
+        families.append((f"Claude ({CLAUDE_MODEL})", "claude", CLAUDE_MODEL,
+                         "counted through the API's count_tokens endpoint"))
+
     loaded, skipped = [], []
-    for label, kind, ident, note in FAMILIES:
+    for label, kind, ident, note in families:
         try:
-            count, vocab, strings = load_family(kind, ident)
+            if kind == "claude":
+                count, vocab, strings = load_claude(ident)
+            else:
+                count, vocab, strings = load_family(kind, ident)
         except Exception as exc:                      # offline, gated, renamed
             skipped.append((label, ident, f"{type(exc).__name__}: {exc}"))
             continue
@@ -173,7 +216,8 @@ def report(title, texts, families, price_per_m, note=None):
     for label, _ident, _note, count, vocab, _strings in families:
         n_hy, n_en = count(hy), count(en)
         cost = n_hy / 1_000_000 * price_per_m * 1_000
-        print(f"| {label} | {vocab:,} | {n_hy} | {n_en} | {n_hy / n_en:.2f}x "
+        shown = f"{vocab:,}" if vocab else "not published"
+        print(f"| {label} | {shown} | {n_hy} | {n_en} | {n_hy / n_en:.2f}x "
               f"| {n_hy / len(hy):.2f} | ${cost:.3f} |")
     print()
 
@@ -203,6 +247,8 @@ def report_coverage(texts, families):
 
     rows = []
     for label, _ident, _note, count, vocab, strings in families:
+        if not strings:                     # API-counted, no vocabulary to read
+            continue
         whole, chunks, longest = coverage(strings)
         rows.append((count(texts["hy"]), label, vocab, whole, chunks, longest))
 
@@ -219,9 +265,11 @@ def main():
     parser.add_argument("--price", type=float, default=3.00,
                         help="USD per 1M input tokens (default: 3.00)")
     parser.add_argument("--text", help="measure your own text instead of the samples")
+    parser.add_argument("--no-claude", action="store_true",
+                        help="skip Claude even if an API key is set")
     args = parser.parse_args()
 
-    families, skipped = load_all()
+    families, skipped = load_all(with_claude=not args.no_claude)
     if not families:
         sys.exit("No tokenizer could be loaded. Check your network connection.")
 
@@ -256,10 +304,13 @@ def main():
         print(f"- **{label}** — `{ident}`{suffix}")
     print()
 
-    print("### Not measured\n")
-    for label, why in NO_PUBLIC_TOKENIZER:
-        print(f"- **{label}** — {why}")
-    print()
+    measured = {label.split(" (")[0] for label, _i, _n, _c, _v, _s in families}
+    pending = [(l, w) for l, w in NO_PUBLIC_TOKENIZER if l not in measured]
+    if pending:
+        print("### Not measured\n")
+        for label, why in pending:
+            print(f"- **{label}** — {why}")
+        print()
 
     if skipped:
         print("### Could not be loaded in this run\n")

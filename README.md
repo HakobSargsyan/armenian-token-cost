@@ -127,12 +127,31 @@ because somebody allocated the vocabulary that way.
 
 Full output: [FAMILIES.md](FAMILIES.md).
 
-### Claude and Gemini are missing on purpose
+### Claude and Gemini
 
-Anthropic does not publish a tokenizer for Claude 3 and later, and Google does not publish
-Gemini's. Their Armenian token counts are obtainable only through billed API endpoints.
-Gemma 2 is Gemini's closest public relative, not a stand-in for it — read that row as an
-indication, not a measurement.
+Neither tokenizer is published, so neither can be loaded from a file like the rows above.
+
+**Claude can still be measured, through the API.** Anthropic's `count_tokens` endpoint is
+not billed for tokens — only rate limited — so adding Claude costs nothing beyond having a
+key. `familycompare.py` includes it automatically when `ANTHROPIC_API_KEY` is set:
+
+```bash
+./venv/bin/pip install anthropic
+export ANTHROPIC_API_KEY=...
+./venv/bin/python familycompare.py          # Claude appears as a row
+./venv/bin/python familycompare.py --no-claude   # or skip it
+```
+
+Two details worth knowing if you do this. The endpoint counts a whole request, so each
+call carries a fixed message wrapper; this script measures that overhead once and
+subtracts it, so its Claude numbers line up with the local tokenizers instead of being
+inflated by a constant. And **`tiktoken` is not a usable proxy for Claude** — Anthropic's
+own documentation puts it at 15–20% under on ordinary text, and further off on code and
+non-English input. Do not estimate Claude's Armenian cost from the GPT rows.
+
+**Gemini cannot be measured here at all.** Google publishes neither the tokenizer nor a
+free counting endpoint. Gemma 2 is its closest public relative, not a stand-in — read that
+row as an indication, not a measurement.
 
 ## Why it matters beyond the bill
 
@@ -187,9 +206,11 @@ files. Where a vendor gates its own repository behind a licence click, a byte-id
 community mirror is used so the script runs without credentials; the exact repository for
 every row is printed in the output.
 
-**Claude and Gemini are not measured.** Neither tokenizer is published, so their counts
-need a billed API call. Contributions that add them through the official counting
-endpoints are welcome.
+**Claude is measured only if you supply a key**, through `count_tokens` (free, rate
+limited); without one it is reported as unmeasured rather than estimated. **Gemini is not
+measured at all** — no published tokenizer, no free counting endpoint. Neither is ever
+approximated from the GPT numbers: `tiktoken` is 15–20% under for Claude on ordinary text
+and worse on non-English input.
 
 A tokenizer is not a model. These numbers say what Armenian text *costs*; they say nothing
 about how well a model *understands* Armenian. The cheapest tokenizer is not automatically
@@ -297,9 +318,15 @@ Virtual environment-ը պարտադիր է Debian/Ubuntu-ի վրա (PEP 668)։
 `tokencost.py`-ն չափում է **OpenAI-ի tokenizer-ները**։ `familycompare.py`-ն ավելացնում է
 Llama, Mistral, Gemma, Qwen և DeepSeek՝ իրենց հրապարակված `tokenizer.json` ֆայլերից։
 
-**Claude-ը և Gemini-ն չափված չեն։** Ոչ մեկի tokenizer-ը հրապարակված չէ, ուստի նրանց թվերը
-պահանջում են վճարովի API հարցում։ Gemma 2-ը Gemini-ի ամենամոտ հրապարակային ազգականն է,
-բայց ոչ փոխարինողը։
+**Claude-ը** չափվում է միայն քո API բանալիով՝ `count_tokens` endpoint-ով, որը token-ի
+համար գումար չի գանձում։ Բանալի դնելուց հետո ավտոմատ հայտնվում է աղյուսակում։
+
+**Gemini-ն ընդհանրապես չափելի չէ** այստեղ՝ ո՛չ tokenizer, ո՛չ անվճար հաշվիչ։ Gemma 2-ը
+ամենամոտ ազգականն է, բայց ոչ փոխարինողը։
+
+Եւ կարևորը՝ **tiktoken-ը Claude-ի համար պիտանի չէ**։ Anthropic-ի փաստաթղթերով՝ սովորական
+տեքստի վրա 15-20%-ով քիչ է ցույց տալիս, ոչ-անգլերենի վրա՝ ավելի շատ։ Ուրեմն GPT-ի թվերից
+Claude-ի արժեքը չի կարելի ենթադրել։
 
 Tokenizer-ը մոդել չէ։ Այս թվերը ցույց են տալիս, թե հայերենը որքան **արժե**, ոչ թե որքան
 լավ է մոդելը հայերեն **հասկանում**։ Ամենաէժան tokenizer-ը ավտոմատ լավագույն ընտրությունը չէ։
