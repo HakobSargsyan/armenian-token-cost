@@ -74,6 +74,66 @@ a real optimization and no longer is.
 These pairs are faithful translations rather than length-matched strings, so treat the ratios
 as indicative. The length-matched comparison is the paragraph set above.
 
+## Which model is cheapest for Armenian
+
+The sections above compare languages inside OpenAI's tokenizers. This one compares
+tokenizers against each other, on the same Armenian paragraph. Every family below ships a
+real, downloadable tokenizer, so every number is reproducible locally — no API key:
+
+| Family | Vocab | Armenian tokens | vs English | Cost / 1k calls at $3/1M |
+| --- | --- | --- | --- | --- |
+| GPT-4 / GPT-3.5 | 100,277 | 873 | 10.65x | $2.619 |
+| Llama 3.1 | 128,256 | 786 | 9.59x | $2.358 |
+| Mistral v0.3 | 32,768 | 534 | 6.28x | $1.602 |
+| Qwen 2.5 | 151,665 | 476 | 5.80x | $1.428 |
+| Gemma 2 | 256,000 | 273 | 3.29x | $0.819 |
+| DeepSeek-V3 | 128,815 | 273 | 3.33x | $0.819 |
+| **GPT-4o and newer** | 200,019 | **147** | **1.79x** | **$0.441** |
+
+Identical input, 5.9x apart in price. Choosing Llama 3.1 over GPT-4o for an
+Armenian-language product costs 5.3x more tokens per call before a single word of the
+model's own output.
+
+### Why: vocabulary size does not predict this
+
+The obvious explanation would be that bigger vocabularies tokenize Armenian better. The
+data says otherwise. Mistral has **a quarter** of Llama 3.1's vocabulary and spends 32%
+fewer tokens on the same Armenian text. Gemma has the largest vocabulary in the table and
+still needs 86% more tokens than GPT-4o.
+
+What does predict the cost is how much of the vocabulary each vendor chose to spend on
+Armenian — specifically on *multi-character* Armenian tokens, the ones that actually buy
+compression. A vocabulary holding single Armenian letters still spells a word one token at
+a time:
+
+| Family | Vocab | Armenian tokens in vocab | Multi-char | Longest Armenian token | Paragraph cost |
+| --- | --- | --- | --- | --- | --- |
+| GPT-4 / GPT-3.5 | 100,277 | 0 | 0 | none | 873 |
+| Llama 3.1 | 128,256 | 1 | 0 | `ա` | 786 |
+| Mistral v0.3 | 32,768 | 28 | 0 | `ւ` | 534 |
+| Qwen 2.5 | 151,665 | 72 | 0 | `Ց` | 476 |
+| DeepSeek-V3 | 128,815 | 189 | 118 | `ությունը` | 273 |
+| Gemma 2 | 256,000 | 231 | 118 | `ագրություններ` | 273 |
+| GPT-4o and newer | 200,019 | 1,726 | 1,578 | `հնարավորություն` | 147 |
+
+The ordering is exact: sort the families by multi-character Armenian coverage and you have
+sorted them by Armenian cost. Llama 3.1 allocated 128,256 tokens of vocabulary and gave
+Armenian exactly one of them, so it falls back to spelling Armenian out byte by byte.
+GPT-4o holds 1,578 multi-character Armenian tokens, including whole words like
+`հնարավորություն` — one token for a 15-character word.
+
+This is a decision, not a property of the language. Armenian is expensive in a model
+because somebody allocated the vocabulary that way.
+
+Full output: [FAMILIES.md](FAMILIES.md).
+
+### Claude and Gemini are missing on purpose
+
+Anthropic does not publish a tokenizer for Claude 3 and later, and Google does not publish
+Gemini's. Their Armenian token counts are obtainable only through billed API endpoints.
+Gemma 2 is Gemini's closest public relative, not a stand-in for it — read that row as an
+indication, not a measurement.
+
 ## Why it matters beyond the bill
 
 - **Cost** — scales linearly with every call, on input and output both.
@@ -103,16 +163,37 @@ Options:
 ./venv/bin/python tokencost.py --text "your text"  # measure your own
 ```
 
+To compare model families instead of languages:
+
+```bash
+./venv/bin/python familycompare.py                   # every family, every set
+./venv/bin/python familycompare.py --set paragraph   # one sample set
+./venv/bin/python familycompare.py --text "your text"
+```
+
+The first run downloads six tokenizer files from the Hugging Face Hub (a few MB, cached
+afterwards) and needs no account or token. Families that cannot be reached are listed as
+skipped rather than silently dropped.
+
 Full output is in [RESULTS.md](RESULTS.md). The texts are in [samples.json](samples.json):
 `paragraph`, `sentence` and `greeting` hold the same content in many languages, and `pairs`
 holds realistic Armenian/English payloads. Add a language by adding a translation.
 
 ## Scope and honesty about it
 
-These are **OpenAI tokenizers**, measured locally via `tiktoken`. Anthropic and Google do
-not ship their tokenizers as open packages, so Claude and Gemini are not covered here;
-their token counts for Armenian may differ. Contributions that measure other tokenizers
-through their official counting APIs are welcome.
+`tokencost.py` measures **OpenAI tokenizers** via `tiktoken`. `familycompare.py` adds
+Llama, Mistral, Gemma, Qwen and DeepSeek, loaded from their published `tokenizer.json`
+files. Where a vendor gates its own repository behind a licence click, a byte-identical
+community mirror is used so the script runs without credentials; the exact repository for
+every row is printed in the output.
+
+**Claude and Gemini are not measured.** Neither tokenizer is published, so their counts
+need a billed API call. Contributions that add them through the official counting
+endpoints are welcome.
+
+A tokenizer is not a model. These numbers say what Armenian text *costs*; they say nothing
+about how well a model *understands* Armenian. The cheapest tokenizer is not automatically
+the best choice.
 
 Georgian is included in the sentence set because it shows the same pattern — this is a
 non-Latin-script problem, not an Armenian one specifically.
@@ -141,6 +222,54 @@ non-Latin-script problem, not an Armenian one specifically.
 բովանդակության համար։ Նոր սերնդում այդ ցուցանիշը 10.65x-ից իջել է 1.79x՝ մոտ վեց անգամ
 բարելավում։ Բայց դեռ գրեթե կրկնակի ավելի է անգլերենից և ավելի վատ, քան ռուսերենը։
 
+## Ո՞ր մոդելն է ամենաէժանը հայերենի համար
+
+Վերևի բաժինները համեմատում են լեզուները OpenAI-ի tokenizer-ների ներսում։ Սա համեմատում է
+tokenizer-ները միմյանց հետ՝ նույն հայերեն պարբերությամբ։ Բոլոր թվերը վերարտադրելի են
+տեղում, առանց API բանալու.
+
+| Ընտանիք | Vocab | Հայերեն token | vs անգլերեն |
+| --- | --- | --- | --- |
+| GPT-4 / GPT-3.5 | 100,277 | 873 | 10.65x |
+| Llama 3.1 | 128,256 | 786 | 9.59x |
+| Mistral v0.3 | 32,768 | 534 | 6.28x |
+| Qwen 2.5 | 151,665 | 476 | 5.80x |
+| Gemma 2 | 256,000 | 273 | 3.29x |
+| DeepSeek-V3 | 128,815 | 273 | 3.33x |
+| **GPT-4o և նորերը** | 200,019 | **147** | **1.79x** |
+
+Նույն մուտքը՝ 5.9 անգամ տարբերություն։
+
+### Ինչու. vocab-ի չափը ոչինչ չի բացատրում
+
+Mistral-ի բառապաշարը Llama 3.1-ի **քառորդն** է, բայց նույն հայերեն տեքստի վրա 32%-ով քիչ
+token է ծախսում։ Gemma-ն ունի աղյուսակի ամենամեծ vocab-ը և դեռ 86%-ով ավելի շատ token է
+պահանջում, քան GPT-4o-ն։
+
+Իրական բացատրությունը այն է, թե vocab-ի որ մասն է տրվել հայերենին՝ մասնավորապես
+**մի քանի տառանոց** հայերեն token-ներին։ Մեկ տառանոց token-ներով բառը դեռ տառ-առ-տառ է
+գրվում.
+
+| Ընտանիք | Հայերեն token vocab-ում | Մի քանի տառանոց | Ամենաերկարը | Պարբերության արժեքը |
+| --- | --- | --- | --- | --- |
+| GPT-4 / GPT-3.5 | 0 | 0 | չկա | 873 |
+| Llama 3.1 | 1 | 0 | `ա` | 786 |
+| Mistral v0.3 | 28 | 0 | `ւ` | 534 |
+| Qwen 2.5 | 72 | 0 | `Ց` | 476 |
+| DeepSeek-V3 | 189 | 118 | `ությունը` | 273 |
+| Gemma 2 | 231 | 118 | `ագրություններ` | 273 |
+| GPT-4o և նորերը | 1,726 | 1,578 | `հնարավորություն` | 147 |
+
+Հերթականությունը ճշգրիտ է՝ դասավորիր ընտանիքները ըստ հայերենի ծածկույթի, և ստացել ես
+նույն դասավորությունը ըստ արժեքի։ Llama 3.1-ը բաշխել է 128,256 token և հայերենին տվել
+ուղիղ մեկը, ուստի մնացածը գրում է բայթ-առ-բայթ։ GPT-4o-ն ունի 1,578 բազմատառ հայերեն
+token, ներառյալ ամբողջական բառեր՝ `հնարավորություն` մեկ token-ով, 15 նշան։
+
+Սա որոշում է, ոչ թե լեզվի հատկություն։ Հայերենը թանկ է, որովհետև ինչ-որ մեկը vocab-ը
+այդպես է բաշխել։
+
+Ամբողջական արդյունքը՝ [FAMILIES.md](FAMILIES.md)։
+
 ## Ինչու է սա կարևոր
 
 - **Արժեք** — աճում է գծայնորեն՝ ամեն կանչի հետ։
@@ -153,17 +282,27 @@ non-Latin-script problem, not an Armenian one specifically.
 ## Վերարտադրել չափումը
 
 ```bash
-pip install -r requirements.txt
-python tokencost.py
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+./venv/bin/python tokencost.py        # լեզուները՝ OpenAI-ի tokenizer-ներում
+./venv/bin/python familycompare.py    # մոդելների ընտանիքները՝ իրար դեմ
 ```
+
+Virtual environment-ը պարտադիր է Debian/Ubuntu-ի վրա (PEP 668)։
 
 Ամբողջական արդյունքը՝ [RESULTS.md](RESULTS.md)-ում։ Զուգահեռ տեքստերը՝ [samples.json](samples.json)-ում։
 
 ## Սահմանափակումներ
 
-Սրանք **OpenAI-ի tokenizer-ներն** են։ Anthropic-ը և Google-ը իրենց tokenizer-ները բաց
-փաթեթներով չեն տարածում, ուստի Claude-ը և Gemini-ն այստեղ ներառված չեն՝ նրանց թվերը
-կարող են տարբերվել։
+`tokencost.py`-ն չափում է **OpenAI-ի tokenizer-ները**։ `familycompare.py`-ն ավելացնում է
+Llama, Mistral, Gemma, Qwen և DeepSeek՝ իրենց հրապարակված `tokenizer.json` ֆայլերից։
+
+**Claude-ը և Gemini-ն չափված չեն։** Ոչ մեկի tokenizer-ը հրապարակված չէ, ուստի նրանց թվերը
+պահանջում են վճարովի API հարցում։ Gemma 2-ը Gemini-ի ամենամոտ հրապարակային ազգականն է,
+բայց ոչ փոխարինողը։
+
+Tokenizer-ը մոդել չէ։ Այս թվերը ցույց են տալիս, թե հայերենը որքան **արժե**, ոչ թե որքան
+լավ է մոդելը հայերեն **հասկանում**։ Ամենաէժան tokenizer-ը ավտոմատ լավագույն ընտրությունը չէ։
 
 ## License
 
