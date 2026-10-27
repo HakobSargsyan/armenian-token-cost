@@ -6,6 +6,17 @@ languages written in non-Latin scripts are measurably more expensive to work wit
 
 This repository measures that gap for Armenian, with reproducible numbers.
 
+It answers two separate questions:
+
+| Question | Where | Script |
+| --- | --- | --- |
+| How much more does Armenian cost than English? | [Headline result](#headline-result) | `tokencost.py` |
+| Which model is cheapest for Armenian? | [Model comparison](#which-model-is-cheapest-for-armenian) | `familycompare.py` |
+
+The short version of the second one: the same Armenian paragraph costs **147 tokens in
+GPT-4o and 873 in GPT-4** — and the English version costs 82 tokens in every model tested.
+For English the choice of tokenizer does not matter. For Armenian it is a 5.9x decision.
+
 ## Headline result
 
 Identical paragraph, same meaning, ~470–485 characters, measured with OpenAI's `tiktoken`:
