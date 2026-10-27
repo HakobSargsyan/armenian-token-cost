@@ -16,7 +16,7 @@
     "ka": "ხელოვნური ინტელექტი ცვლის იმას, თუ როგორ აშენებენ ინჟინრები პროგრამულ პროდუქტებს."
   },
   "greeting": {
-    "_note": "Everyday short phrase. Short inputs are where per-language overhead hurts most.",
+    "_note": "Everyday short phrase. Included to show that the penalty is not uniform across input lengths -- on current tokenizers a short greeting is hit less hard than a full sentence.",
     "en": "Hello, how are you?",
     "hy": "Բարև, ինչպե՞ս ես։",
     "hy_latin": "Barev, inchpes es?",

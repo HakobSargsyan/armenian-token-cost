@@ -176,9 +176,13 @@ def coverage(strings):
     armenian = [s for s in strings if s and any(ch in ARMENIAN for ch in s)]
     chunks = [s for s in armenian
               if sum(1 for ch in s if ch in ARMENIAN) >= 2]
-    longest = max(armenian, key=lambda s: sum(1 for ch in s if ch in ARMENIAN),
-                  default="")
-    return len(armenian), len(chunks), longest.strip()
+    # Vocabularies arrive in a hash-dependent order, so ties must be broken on
+    # the token text itself -- otherwise this column prints a different letter
+    # on every run. Where nothing is longer than one letter there is no
+    # meaningful example to show, so say that instead of picking a letter.
+    longest = (max(chunks or [], key=lambda s: (sum(1 for ch in s if ch in ARMENIAN), s),
+                   default="").strip())
+    return len(armenian), len(chunks), longest
 
 
 def load_all(with_claude=True):
@@ -253,7 +257,12 @@ def report_coverage(texts, families):
         rows.append((count(texts["hy"]), label, vocab, whole, chunks, longest))
 
     for cost, label, vocab, whole, chunks, longest in sorted(rows, reverse=True):
-        shown = f"`{longest}`" if longest else "none"
+        if longest:
+            shown = f"`{longest}`"
+        elif whole:
+            shown = "single letters only"
+        else:
+            shown = "no Armenian at all"
         print(f"| {label} | {vocab:,} | {whole:,} | {chunks:,} | {shown} "
               f"| {cost} tokens |")
     print()

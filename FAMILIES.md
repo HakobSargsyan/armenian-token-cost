@@ -29,7 +29,7 @@ _One parallel sentence, used to compare Armenian script against Latin transliter
 | DeepSeek-V3 | 128,815 | 47 | 11 | 4.27x | 0.49 | $0.141 |
 
 ### Greeting
-_Everyday short phrase. Short inputs are where per-language overhead hurts most._
+_Everyday short phrase. Included to show that the penalty is not uniform across input lengths -- on current tokenizers a short greeting is hit less hard than a full sentence._
 
 | Family | Vocab | Armenian tokens | English tokens | Multiplier | Tokens/char | Cost / 1k calls |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -45,10 +45,10 @@ _Everyday short phrase. Short inputs are where per-language overhead hurts most.
 
 | Family | Vocab | Armenian tokens | Multi-char | Longest Armenian token | Paragraph cost |
 | --- | --- | --- | --- | --- | --- |
-| GPT-4 / GPT-3.5 | 100,277 | 0 | 0 | none | 873 tokens |
-| Llama 3.1 | 128,256 | 1 | 0 | `ա` | 786 tokens |
-| Mistral v0.3 | 32,768 | 28 | 0 | `գ` | 534 tokens |
-| Qwen 2.5 | 151,665 | 72 | 0 | `ք` | 476 tokens |
+| GPT-4 / GPT-3.5 | 100,277 | 0 | 0 | no Armenian at all | 873 tokens |
+| Llama 3.1 | 128,256 | 1 | 0 | single letters only | 786 tokens |
+| Mistral v0.3 | 32,768 | 28 | 0 | single letters only | 534 tokens |
+| Qwen 2.5 | 151,665 | 72 | 0 | single letters only | 476 tokens |
 | Gemma 2 | 256,000 | 231 | 118 | `ագրություններ` | 273 tokens |
 | DeepSeek-V3 | 128,815 | 189 | 118 | `ությունը` | 273 tokens |
 | GPT-4o and newer | 200,019 | 1,726 | 1,578 | `հնարավորություն` | 147 tokens |
